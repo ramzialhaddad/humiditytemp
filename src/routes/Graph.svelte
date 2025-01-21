@@ -3,7 +3,6 @@
 	import {onMount} from "svelte";
 
     let {data} = $props();
-    let canvasId = crypto.randomUUID();
 
 	onMount(()=> {
         let url =`/tempHumidity?filter=(device='${data}')`;
@@ -13,77 +12,145 @@
 
 
     function makeChart(input) {
-        const labels = input.map(item => new Date(item.created).toLocaleString()).reverse();
+        const options = {
+            weekday: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        const labels = input.map(item => new Date(item.created).toLocaleString('en-US', options)).reverse();
+
         const tempData = input.map(item => parseFloat(item.temp)).reverse();
         const humidityData = input.map(item => parseFloat(item.humidity)).reverse();
 
-        console.log(data, input[input.length-1].created)
+        const minYTemperature = 18;
+        const maxYTemperature = 25;
 
-        const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-        const ctx = canvas.getContext('2d')!;
-        new Chart(ctx, {
+        const minYHumidity = 15;
+        const maxYHumidity = 40;
+
+        console.log(data, labels[0], "ee");
+
+        const tempCanvas = document.getElementById(data+"-temp") as HTMLCanvasElement;
+        const tempGraphCtx = tempCanvas.getContext('2d')!;
+        const humidityCanvas = document.getElementById(data+"-humidity") as HTMLCanvasElement;
+        const humidityGraphCtx = humidityCanvas.getContext('2d')!;
+
+
+        const tempChart = new Chart(tempGraphCtx, {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [
-                    {
-                        label: 'Temperature (°C)',
-                        data: tempData,
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: false,
-                        yAxisID: 'yTemp', // Link to the temperature Y-axis
-                    },
-                    {
-                        label: 'Humidity (%)',
-                        data: humidityData,
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        fill: false,
-                        yAxisID: 'yHumidity', // Link to the humidity Y-axis
-                    }
-                ]
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: tempData,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.1 // Smooth lines
+                }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false, // Allow the chart to fill the container
                 scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Time'
-                        }
-                    },
-                    yTemp: {
-                        title: {
-                            display: true,
-                            text: 'Temperature (°C)'
-                        },
-                        beginAtZero: true,
-                        min: 15, // Set minimum value for temperature
-                        max: 30, // Adjust maximum value for temperature as needed
-                        position: 'left', // Position on the left
-                        grid: {
-                            color: 'rgba(255, 99, 132, 0.5)', // Color for grid lines
-                        },
-                        ticks: {
-                            color: 'rgba(255, 99, 132, 1)', // Color for tick labels
-                        }
-                    },
-                    yHumidity: {
-                        title: {
-                            display: true,
-                            text: 'Humidity (%)'
-                        },
+                    y: {
+                        //min: minYTemperature,
+						//max: maxYTemperature,
                         beginAtZero: false,
-                        min: 15, // Set minimum value for humidity
-                        max: 50, // Adjust maximum value for humidity as needed
-                        position: 'right', // Position on the right
                         grid: {
-                            color: 'rgba(54, 162, 235, 0.5)', // Color for grid lines
+                            color: 'rgba(255, 255, 255, 0.2)', // Light grid lines
                         },
                         ticks: {
-                            color: 'rgba(54, 162, 235, 1)', // Color for tick labels
+                            color: 'rgba(255, 255, 255, 1)', // Bright white text for x-axis
                         }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 30, // Adjust as needed
+                            color: 'rgba(255, 255, 255, 1)', // Bright white text for x-axis
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 1)', // Bright white text for legend
+                        }
+                    },
+                    tooltip: {
+                        intersect: false,
+						position: 'nearest',
+                        titleColor: 'rgba(255, 255, 255, 1)', // Bright white text for tooltip title
+                        bodyColor: 'rgba(255, 255, 255, 1)', // Bright white text for tooltip body
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark background for tooltip
+                        borderColor: 'rgba(255, 255, 255, 0.5)', // Light border for tooltip
+                        borderWidth: 1,
+                    }
+                },
+            },
+        });
+
+        const humidityChart = new Chart(humidityGraphCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Humidity (%)',
+                    data: humidityData,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true,
+                    tension: 0.1 // Smooth lines
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allow the chart to fill the container
+                scales: {
+                    y: {
+                        //min: minYHumidity,
+						//max: maxYHumidity,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)', // Light grid lines
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 1)', // Bright white text for x-axis
+                        },
+                        beginAtZero: false
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.2)', // Light grid lines
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 1)', // Bright white text for x-axis
+                            autoSkip: true,
+                            maxTicksLimit: 30 // Adjust as needed
+                        },
+                        time: {
+                            unit: 'hour', // Display labels by hour
+                            tooltipFormat: 'YYYY-MM-DD HH:mm', // Format for tooltips
+                            displayFormats: {
+                                hour: 'HH:mm', // Format for x-axis labels
+                            }
+                        }
+                    },
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 1)', // Bright white text for legend
+                        }
+                    },
+                    tooltip: {
+                        intersect: false,
+                        position: 'nearest',
+                        titleColor: 'rgba(255, 255, 255, 1)', // Bright white text for tooltip title
+                        bodyColor: 'rgba(255, 255, 255, 1)', // Bright white text for tooltip body
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dark background for tooltip
+                        borderColor: 'rgba(255, 255, 255, 0.5)', // Light border for tooltip
+                        borderWidth: 1,
                     }
                 }
             }
@@ -91,6 +158,18 @@
     }
 </script>
 
-<div>
-	<canvas id="{canvasId}"></canvas>
+<div class="flex min-h-[32rem] flex-wrap">
+	<div class="flex lg:flex-1 w-full">
+		<canvas id="{data}-temp" class="w-full h-full"></canvas>
+	</div>
+	<div class="flex lg:flex-1 w-full">
+		<canvas id="{data}-humidity" class="w-full h-full"></canvas>
+	</div>
 </div>
+
+
+
+<!--<div class="grid grid-flow-col h-72">-->
+<!--	<canvas class="" id="{data}-temp"></canvas>-->
+<!--	<canvas class="" id="{data}-humidity"></canvas>-->
+<!--</div>-->
