@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "collectionId": "pbc_2153001328",
+      "collectionName": "devices",
+      "created": "2025-01-03 23:37:23.715Z",
+      "deviceName": "Device 1 Sample",
+      "id": "9857153337916",
+      "updated": "2025-01-03 23:56:44.469Z"
+    },
+    {
+      "collectionId": "pbc_2153001328",
+      "collectionName": "devices",
+      "created": "2025-01-05 00:30:08.006Z",
+      "deviceName": "Device 2 Sample",
+      "id": "198282125291056",
+      "updated": "2025-01-05 00:30:46.134Z"
+    },
+    {
+      "collectionId": "pbc_2153001328",
+      "collectionName": "devices",
+      "created": "2025-01-05 00:39:16.877Z",
+      "deviceName": "Device 3 Sample",
+      "id": "154739819958156",
+      "updated": "2025-01-05 00:45:05.953Z"
+    }
+  ],
+  "page": 1,
+  "perPage": 30,
+  "totalItems": 3,
+  "totalPages": 1
+}
