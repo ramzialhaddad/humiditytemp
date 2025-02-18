@@ -3,6 +3,7 @@
 	import {onMount} from "svelte";
 
     let {data} = $props();
+	let selectedButton = $state('1d');
 
 	onMount(()=> {
         let url =`/tempHumidity?filter=(device='${data}')`;
@@ -10,6 +11,9 @@
         let tempHumidityReq = fetch(url).then(r => r.json()).then(data => {makeChart(data.items)});
     });
 
+	function handleButtonClick(button: string){
+		selectedButton = button;
+	}
 
     function makeChart(input) {
         const options = {
@@ -28,7 +32,7 @@
         const minYHumidity = 15;
         const maxYHumidity = 40;
 
-        console.log(data, labels[0], "ee");
+        //console.log(data, labels[0], "ee");
 
         const tempCanvas = document.getElementById(data+"-temp") as HTMLCanvasElement;
         const tempGraphCtx = tempCanvas.getContext('2d')!;
@@ -158,13 +162,44 @@
     }
 </script>
 
-<div class="flex min-h-[32rem] flex-wrap">
-	<div class="flex lg:flex-1 w-full">
-		<canvas id="{data}-temp" class="w-full h-full"></canvas>
+<div>
+	<div class="flex min-h-[32rem] flex-wrap">
+		<div class="flex lg:flex-1 w-full">
+			<canvas id="{data}-temp" class="w-full h-full"></canvas>
+		</div>
+		<div class="flex lg:flex-1 w-full">
+			<canvas id="{data}-humidity" class="w-full h-full"></canvas>
+		</div>
 	</div>
-	<div class="flex lg:flex-1 w-full">
-		<canvas id="{data}-humidity" class="w-full h-full"></canvas>
+	<div class="bg-black p-4 rounded">
+		<div class="flex justify-between items-center">
+			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
+			{selectedButton == '1d' ? 'bg-orange-500' : ''}"
+
+					onclick={()=> handleButtonClick('1d')}
+			>1D</button>
+
+			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
+			{selectedButton == '3d' ? 'bg-orange-500' : ''}"
+
+					onclick={()=> handleButtonClick('3d')}
+			>3D</button>
+
+			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
+				{selectedButton == '1w' ? 'bg-orange-500' : ''}"
+
+					onclick={()=> handleButtonClick('1w')}
+			>1W</button>
+
+			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
+				{selectedButton == 'at' ? 'bg-orange-500' : ''}"
+
+					onclick={()=> handleButtonClick('at')}
+			>All</button>
+		</div>
 	</div>
+
+
 </div>
 
 
