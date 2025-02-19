@@ -174,25 +174,25 @@
 	<div class="bg-black p-4 rounded">
 		<div class="flex justify-between items-center">
 			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
-			{selectedButton == '1d' ? 'bg-orange-500' : ''}"
+			{selectedButton == '1d' ? 'bg-gray-400 text-black font-bold' : ''}"
 
 					onclick={()=> handleButtonClick('1d')}
 			>1D</button>
 
 			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
-			{selectedButton == '3d' ? 'bg-orange-500' : ''}"
+			{selectedButton == '3d' ? 'bg-gray-400 text-black font-bold' : ''}"
 
 					onclick={()=> handleButtonClick('3d')}
 			>3D</button>
 
 			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
-				{selectedButton == '1w' ? 'bg-orange-500' : ''}"
+				{selectedButton == '1w' ? 'bg-gray-400 text-black font-bold' : ''}"
 
 					onclick={()=> handleButtonClick('1w')}
 			>1W</button>
 
 			<button class="bg-gray-700 text-white px-6 py-3 rounded-lg mr-4 sm:mr-0 transition-colors
-				{selectedButton == 'at' ? 'bg-orange-500' : ''}"
+				{selectedButton == 'at' ? 'bg-gray-400 text-black font-bold' : ''}"
 
 					onclick={()=> handleButtonClick('at')}
 			>All</button>
