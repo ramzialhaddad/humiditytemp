@@ -164,10 +164,10 @@
 
 <div>
 	<div class="flex min-h-[32rem] flex-wrap">
-		<div class="flex lg:flex-1 w-full">
+		<div class="flex min-h-[18rem] lg:flex-1 w-full">
 			<canvas id="{data}-temp" class="w-full h-full"></canvas>
 		</div>
-		<div class="flex lg:flex-1 w-full">
+		<div class="flex min-h-[18rem] lg:flex-1 w-full">
 			<canvas id="{data}-humidity" class="w-full h-full"></canvas>
 		</div>
 	</div>
