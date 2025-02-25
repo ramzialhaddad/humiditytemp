@@ -13,6 +13,7 @@
 
 	function handleButtonClick(button: string){
 		selectedButton = button;
+        console.log(fetch("http://raspberrypi.local:8090/api/collections/tempandhumidity/records"));
 	}
 
     function makeChart(input) {
