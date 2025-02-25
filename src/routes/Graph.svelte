@@ -1,23 +1,150 @@
 <script lang="ts">
     import Chart, {type ChartData} from 'chart.js/auto';
 	import {onMount} from "svelte";
+    import {page} from "$app/stores";
 
     let {data} = $props();
 	let selectedButton = $state('1d');
 
-	onMount(()=> {
-        let url =`/tempHumidity?filter=(device='${data}')`;
+    let totalPages: any;
 
-        let tempHumidityReq = fetch(url).then(r => r.json()).then(data => {makeChart(data.items)});
+    let tempChart: Chart;
+    let humidityChart: Chart;
+
+	onMount(()=> {
+        fetchData({deviceId:data}).then(d => {
+            totalPages = d.totalPages;
+            makeChart(d.items);
+            console.log('On Mount!');
+		});
+
+
+        // let url =`/tempHumidity?filter=(device='${data}')`;
+		//
+        // fetch(url).then(r => r.json()).then(data => {
+        //     chartData = data.items;
+        //     makeChart(chartData);
+        // });
     });
 
-	function handleButtonClick(button: string){
+    async function fetchData({deviceId, page = 1, perPage = 720 }: { deviceId: string; page?: number; perPage?: number;}) {
+        try {
+            let fetchUrl = new URL(`http://raspberrypi.local:8090/api/collections/tempandhumidity/records`);
+            fetchUrl.searchParams.set('sort', "-created");
+            fetchUrl.searchParams.set('perPage', String(perPage));
+            fetchUrl.searchParams.set('page', String(page));
+            fetchUrl.searchParams.set('filter', `(device='${deviceId}')`);
+
+            let response = await fetch(fetchUrl);
+
+            let responseJson = await response.json();
+            return responseJson;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return null;
+        }
+    }
+
+	async function handleButtonClick(button: string){
+        if(button == selectedButton) return;
+
 		selectedButton = button;
-        console.log(fetch("http://raspberrypi.local:8090/api/collections/tempandhumidity/records"));
+
+        let days = 1;
+        switch(button){
+            case '1d':
+                days = 1;
+                break;
+			case '3d':
+                days = 3;
+                break;
+			case '1w':
+                days = 7;
+                break;
+			case 'at':
+                days = totalPages;
+                break;
+		}
+
+        tempChart.data.labels = [];
+        tempChart.data.datasets[0].data = [];
+
+        humidityChart.data.labels = [];
+        humidityChart.data.datasets[0].data = [];
+
+        tempChart.update();
+        humidityChart.update();
+
+        let tempChartData = [];
+        let humidityChartData = [];
+        let labelsChartData = [];
+
+        for (let i = 0; i < days; i++) {
+			let d = await fetchData({deviceId: data, page: i + 1});
+
+            const options =
+				{
+					year: '2-digit',
+					month: '2-digit',
+					day: '2-digit',
+					weekday: 'short',
+					hour: '2-digit',
+					minute: '2-digit',
+				};
+
+			let labels = d.items.map(item => new Date(item.created).toLocaleString('en-CA', options)).reverse();
+
+			let tempData = d.items.map(item => parseFloat(item.temp)).reverse();
+			let humidityData = d.items.map(item => parseFloat(item.humidity)).reverse();
+
+			// tempChartData.splice(0, 0, ...tempData);
+            // humidityChartData.splice(0, 0, ...humidityData);
+            // labelsChartData.splice(0, 0, ...labels);
+
+			// USE OF SPLICE IS EXPLAINED IN LARGER COMMENT AT END OF FUNCTION
+            // Adding new data
+            tempChart.data.datasets[0].data.splice(0, 0, ...tempData);
+            humidityChart.data.datasets[0].data.splice(0, 0, ...humidityData);
+
+            // Adding new labels
+            humidityChart.data.labels!.splice(0, 0, ...labels);
+            tempChart.data.labels!.splice(0, 0, ...labels);
+
+            tempChart.update();
+            humidityChart.update();
+
+        }
+
+        // // Adding new data
+        // tempChart.data.datasets[0].data.push(...tempChartData);
+        // humidityChart.data.datasets[0].data.push(...humidityChartData);
+		//
+        // // Adding new labels
+        // humidityChart.data.labels!.push(...labelsChartData);
+        // tempChart.data.labels!.push(...labelsChartData);
+		//
+        // tempChart.update();
+        // humidityChart.update();
+
+
+		/***
+		 NOTE FOR FUTURE:
+			 THE USE OF SPLICE IS TO KEEP THE PROPER ORDER OF DATA WHEN STITCHING MULTIPLE API REQUESTS
+			 EXAMPLE OF THE PROBLEM IS BELOW
+
+         [27, 25]    		  API RESPONSE
+         [25, 27]    		  REVERSE FOR ARRAY
+         [25, 27]   		  ARRAY STATUS
+
+         [23, 21]		      API RESPONSE
+         [21, 23]    		  REVERSE FOR ARRAY
+         [25, 27, 21, 23]	  ARRAY STATUS
+		 */
 	}
 
     function makeChart(input) {
-        const options = {
+        const options =
+        {
             weekday: 'short',
             hour: '2-digit',
             minute: '2-digit'
@@ -41,7 +168,7 @@
         const humidityGraphCtx = humidityCanvas.getContext('2d')!;
 
 
-        const tempChart = new Chart(tempGraphCtx, {
+        tempChart = new Chart(tempGraphCtx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -96,7 +223,7 @@
             },
         });
 
-        const humidityChart = new Chart(humidityGraphCtx, {
+        humidityChart = new Chart(humidityGraphCtx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -163,6 +290,7 @@
     }
 </script>
 
+
 <div>
 	<div class="flex min-h-[32rem] flex-wrap">
 		<div class="flex min-h-[18rem] lg:flex-1 w-full">
@@ -199,13 +327,4 @@
 			>All</button>
 		</div>
 	</div>
-
-
 </div>
-
-
-
-<!--<div class="grid grid-flow-col h-72">-->
-<!--	<canvas class="" id="{data}-temp"></canvas>-->
-<!--	<canvas class="" id="{data}-humidity"></canvas>-->
-<!--</div>-->
